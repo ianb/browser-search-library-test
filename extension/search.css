@@ -5,3 +5,14 @@ body {
 input[type="text"] {
   width: 80%;
 }
+
+#provider-list li {
+  display: inline;
+  margin-right: 2em;
+}
+
+#no-search {
+  text-align: center;
+  padding: 3em;
+  width: 100%;
+}

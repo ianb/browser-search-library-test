@@ -3,6 +3,8 @@
 /* eslint-disable no-unused-vars */
 /* globals React */
 
+import { providers } from "./providers.js";
+
 export class Search extends React.Component {
   render() {
     return (
@@ -13,6 +15,7 @@ export class Search extends React.Component {
         ) : (
           <NoSearch />
         )}
+        <ProviderList />
       </div>
     );
   }
@@ -45,6 +48,28 @@ class SearchResults extends React.Component {
 
 class NoSearch extends React.Component {
   render() {
-    return <div>Enter a search</div>;
+    return <div id="no-search">Enter a search</div>;
+  }
+}
+
+class ProviderList extends React.Component {
+  render() {
+    const names = Object.keys(providers).sort();
+    const lis = [];
+    for (const name of names) {
+      const p = providers[name];
+      lis.push(
+        <li key={name}>
+          <a href={p.url} target="_blank" rel="noopener">
+            {p.name}
+          </a>
+        </li>
+      );
+    }
+    return (
+      <div>
+        <ul id="provider-list">{lis}</ul>
+      </div>
+    );
   }
 }
