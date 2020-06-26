@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "Browser Search Library Test",
+  "version": "0.1.0",
+  "description": "Test searching browser resources",
+  "developer": {
+    "name": "Emerging Technologies Advanced Dev Team",
+    "url": "https://github.com/ianb/browser-search-library-test"
+  },
+  "icons": {
+    "32": "images/icon-32.png",
+    "64": "images/icon-64.png"
+  },
+  "applications": {
+    "gecko": {
+      "id": "browser-search-library-test@mozilla.org"
+    }
+  },
+  "incognito": "not_allowed",
+  "background": {
+    "scripts": ["loadMain.js", "vendor/fuse.js"]
+  },
+  "permissions": [
+    "<all_urls>",
+    "storage",
+    "tabs",
+    "mozillaAddons",
+    "about:reader*",
+    "telemetry",
+    "history",
+    "clipboardRead",
+    "clipboardWrite",
+    "bookmarks",
+    "downloads",
+    "browserSettings",
+    "search",
+    "tabHide",
+    "resource://pdf.js/",
+    "find"
+  ],
+  "browser_action": {
+    "browser_style": false,
+    "default_title": "Search Stuff!",
+    "default_icon": "images/icon.svg"
+  }
+}
