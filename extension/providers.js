@@ -1,3 +1,5 @@
+/* globals Fuse */
+
 export const providers = {
   string: {
     name: "String search",
@@ -25,6 +27,23 @@ export const providers = {
   fuse: {
     name: "Fuse.js",
     url: "https://fusejs.io/",
+    async search(browserData, term) {
+      const result = [];
+      for (const key in browserData.data) {
+        const fuse = new Fuse(browserData.data[key].items, {
+          keys: browserData.data[key].items[0].properties,
+        });
+        const r = fuse.search(term);
+        for (const item of r) {
+          result.push({
+            type: key,
+            item,
+            info: {},
+          });
+        }
+      }
+      return result;
+    },
   },
 
   flexsearch: {

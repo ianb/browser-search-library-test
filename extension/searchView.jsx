@@ -10,14 +10,14 @@ export class Search extends React.Component {
     return (
       <div>
         <SearchField onSearch={this.props.onSearch} />
-        {this.props.browserData ? (
-          <BrowserData data={this.props.browserData} />
-        ) : null}
         {this.props.searchResults ? (
           <SearchResults searchResults={this.props.searchResults} />
         ) : (
           <NoSearch isSearching={this.props.isSearching} />
         )}
+        {this.props.browserData ? (
+          <BrowserData data={this.props.browserData} />
+        ) : null}
         <ProviderList />
       </div>
     );
