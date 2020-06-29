@@ -36,8 +36,9 @@ rules:
   react-hooks/rules-of-hooks: error
   react-hooks/exhaustive-deps: warn
   prettier/prettier:
-   - error
-   - {}
-   - fileInfoOptions:
-      ignorePath: '.gitignore'
+    - error
+    # While prettier has updated defaults, eslint has the old defaults we have to update:
+    - { arrowParens: "always", trailingComma: "es5" }
+    - fileInfoOptions:
+        ignorePath: ".gitignore"
   jsx-a11y/no-onchange: off

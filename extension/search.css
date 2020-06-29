@@ -16,3 +16,7 @@ input[type="text"] {
   padding: 3em;
   width: 100%;
 }
+
+.info-value {
+  margin-left: 0.5em;
+}
