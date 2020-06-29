@@ -1,4 +1,4 @@
-/* globals Fuse */
+/* globals Fuse, FlexSearch */
 
 export const providers = {
   string: {
@@ -49,6 +49,23 @@ export const providers = {
   flexsearch: {
     name: "FlexSearch.js",
     url: "https://github.com/nextapps-de/flexsearch",
+    async search(browserData, term) {
+      const index = new FlexSearch();
+      for (const key in browserData.data) {
+        for (const item of browserData.data[key].items) {
+          index.add(item.id, item.indexed);
+        }
+      }
+      const results = index.search(term);
+      return results.map((id) => {
+        return {
+          // FIXME: set type
+          type: null,
+          item: browserData.byId.get(id),
+          info: {},
+        };
+      });
+    },
   },
 
   wade: {

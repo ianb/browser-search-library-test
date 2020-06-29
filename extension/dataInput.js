@@ -60,6 +60,7 @@ export async function collectData() {
   const totalStartTime = Date.now();
   const results = {
     data: {},
+    byId: new Map(),
   };
   for (const key of Object.keys(dataInput).sort()) {
     const input = dataInput[key];
@@ -68,6 +69,7 @@ export async function collectData() {
     const time = Date.now() - startTime;
     let length = 0;
     for (const item of items) {
+      results.byId.set(item.id, item);
       for (const prop of item.properties) {
         if (item[prop]) {
           length += item[prop].length;
@@ -87,6 +89,13 @@ class Item {
   get description() {
     const name = this.constructor.name;
     return `${name}: ${this.title}`;
+  }
+
+  get indexed() {
+    return this.properties
+      .map((p) => this[p])
+      .filter((x) => x)
+      .join(" ");
   }
 }
 
