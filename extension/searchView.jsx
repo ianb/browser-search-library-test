@@ -105,7 +105,7 @@ class ProviderSearchResult extends React.Component {
         info.push(
           <span key={key} className="info-value">
             <span>{key}:</span>
-            <code>{item.info[key]}</code>
+            <code>{JSON.stringify(item.info[key])}</code>
           </span>
         );
       }
@@ -116,9 +116,12 @@ class ProviderSearchResult extends React.Component {
       }
       if (item.item.url) {
         val = (
-          <a href={item.item.url} target="_blank" rel="noopener">
-            {item.item.description} {info}
-          </a>
+          <span>
+            <a href={item.item.url} target="_blank" rel="noopener">
+              {item.item.description}
+            </a>
+            {info}
+          </span>
         );
       } else {
         val = (

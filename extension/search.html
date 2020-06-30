@@ -13,8 +13,9 @@
     <script src="vendor/flexsearch.min.js"></script>
     <script src="vendor/wade.js"></script>
     <script src="vendor/js-search.js"></script>
-    <script src="vendor/lunr.js"></script>
+    <!-- elasticlunr overrides lunr, but doing it in this order should allow them both to load: -->
     <script src="vendor/elasticlunr.js"></script>
+    <script src="vendor/lunr.js"></script>
     <script src="vendor/bulksearch.js"></script>
     <!--
       This one needs to be browserify'd:

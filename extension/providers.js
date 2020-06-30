@@ -1,4 +1,4 @@
-/* globals Fuse, FlexSearch */
+/* globals Fuse, FlexSearch, Wade, JsSearch, lunr, elasticlunr, BulkSearch */
 
 export const providers = {
   string: {
@@ -71,31 +71,122 @@ export const providers = {
   wade: {
     name: "wade",
     url: "https://github.com/kbrsh/wade",
+    async search(browserData, term) {
+      const items = [];
+      const itemIds = [];
+      for (const key in browserData.data) {
+        for (const item of browserData.data[key].items) {
+          items.push(item.indexed);
+          itemIds.push(item.id);
+        }
+      }
+      const search = Wade(items);
+      const results = search(term);
+      return results.map((result) => {
+        return {
+          key: null,
+          item: browserData.byId.get(itemIds[result.index]),
+          info: {},
+        };
+      });
+    },
   },
 
   jssearch: {
     name: "Js Search",
     url: "https://github.com/bvaughn/js-search",
-  },
-
-  jsii: {
-    name: "JSii",
-    url: "https://github.com/aws/jsii",
+    async search(browserData, term) {
+      const items = [];
+      for (const key in browserData.data) {
+        for (const item of browserData.data[key].items) {
+          items.push(item);
+        }
+      }
+      const search = new JsSearch.Search("id");
+      search.addIndex("indexed");
+      search.addDocuments(items);
+      const results = search.search(term);
+      return results.map((r) => {
+        return {
+          item: r,
+          info: {},
+        };
+      });
+    },
   },
 
   lunr: {
     name: "Lunr.js",
     url: "https://github.com/olivernn/lunr.js/",
+    async search(browserData, term) {
+      const index = lunr(function () {
+        this.field("indexed");
+        for (const key in browserData.data) {
+          for (const item of browserData.data[key].items) {
+            this.add(item);
+          }
+        }
+      });
+      return index.search(term).map((info) => {
+        return {
+          item: browserData.byId.get(info.ref),
+          info,
+        };
+      });
+    },
   },
 
+  /*
+  // This doesn't seem to be working:
   elasticlunr: {
     name: "Elasticlunr.js",
     url: "http://elasticlunr.com/",
+    async search(browserData, term) {
+      const index = elasticlunr(function () {
+        this.addField("indexed");
+        this.setRef("id");
+        for (const key in browserData.data) {
+          for (const item of browserData.data[key].items) {
+            this.addDoc(item.id, item);
+          }
+        }
+      });
+      return index.search(term).map((info) => {
+        return {
+          item: browserData.byId.get(info.ref),
+          info,
+        };
+      });
+    },
   },
+  */
 
   bulksearch: {
     name: "BulkSearch",
     url: "https://github.com/nextapps-de/bulksearch",
+    async search(browserData, term) {
+      const index = new BulkSearch({
+        encode: "extra",
+        multi: true,
+      });
+      window.x = index;
+      let i = 0;
+      const itemIds = [];
+      for (const key in browserData.data) {
+        for (const item of browserData.data[key].items) {
+          index.add(i, item.indexed);
+          i++;
+          itemIds.push(item.id);
+        }
+      }
+      const results = index.search(term);
+      return results.map((index) => {
+        return {
+          item: browserData.byId.get(itemIds[index]),
+          info: {},
+        };
+      });
+    },
   },
 
   /*

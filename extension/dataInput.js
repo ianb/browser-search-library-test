@@ -1,3 +1,14 @@
+function uniqueById(items) {
+  const ids = new Set();
+  return items.filter((x) => {
+    if (ids.has(x.id)) {
+      return false;
+    }
+    ids.add(x.id);
+    return true;
+  });
+}
+
 export const dataInput = {
   bookmarks: {
     name: "Bookmarks",
@@ -9,7 +20,8 @@ export const dataInput = {
   history: {
     name: "History",
     async getAll() {
-      const results = await browser.history.search({ text: "" });
+      let results = await browser.history.search({ text: "" });
+      results = uniqueById(results);
       return results.map((h) => new History(h));
     },
   },
@@ -17,10 +29,11 @@ export const dataInput = {
     name: "Recent History",
     async getAll() {
       const TWO_WEEKS = 1000 * 60 * 60 * 24 * 14; // 14 days
-      const results = await browser.history.search({
+      let results = await browser.history.search({
         text: "",
         startTime: Date.now() - TWO_WEEKS,
       });
+      results = uniqueById(results);
       return results.map((h) => new History(h));
     },
   },
@@ -88,7 +101,7 @@ export async function collectData() {
 class Item {
   get description() {
     const name = this.constructor.name;
-    return `${name}: ${this.title}`;
+    return `${name}: ${this.title}/${this.id}`;
   }
 
   get indexed() {
