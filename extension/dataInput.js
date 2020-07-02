@@ -17,14 +17,20 @@ export const dataInput = {
       return results.map((b) => new Bookmark(b));
     },
   },
+
   history: {
     name: "History",
     async getAll() {
-      let results = await browser.history.search({ text: "" });
+      let results = await browser.history.search({
+        text: "",
+        startTime: 0,
+        maxResults: 10000,
+      });
       results = uniqueById(results);
       return results.map((h) => new History(h));
     },
   },
+
   recentHistory: {
     name: "Recent History",
     async getAll() {
@@ -32,11 +38,13 @@ export const dataInput = {
       let results = await browser.history.search({
         text: "",
         startTime: Date.now() - TWO_WEEKS,
+        maxResults: 10000,
       });
       results = uniqueById(results);
       return results.map((h) => new History(h));
     },
   },
+
   tabs: {
     name: "Tab (not content)",
     async getAll() {
@@ -44,6 +52,7 @@ export const dataInput = {
       return results.map((t) => new Tab(t, null));
     },
   },
+
   tabContent: {
     name: "Tab (with content)",
     async getAll() {
@@ -66,6 +75,74 @@ export const dataInput = {
       }
       return results;
     },
+  },
+
+  selectedPageLinks: {
+    // We have to do the pinned pages because the search interface is the active page
+    name: "Links on pinned or selected pages",
+    async getAll() {
+      const results = [];
+      let tabs = await browser.tabs.query({
+        highlighted: true,
+        active: false,
+      });
+      if (!tabs.length) {
+        tabs = await browser.tabs.query({
+          pinned: true,
+        });
+      }
+      let index = 0;
+      for (const tab of tabs) {
+        let links = [];
+        try {
+          await browser.tabs.executeScript(tab.id, { file: "get-links.js" });
+          links = await browser.tabs.sendMessage(tab.id, {
+            type: "getLinks",
+          });
+        } catch (e) {
+          if (!e.message.includes("Missing host permission")) {
+            throw e;
+          }
+        }
+        for (const link of links) {
+          link.id = `tab-${tab.id}-${index}`;
+          index++;
+          results.push(new Link(tab, link));
+        }
+      }
+      return results;
+    },
+  },
+};
+
+export const dataCollections = {
+  tabs: {
+    title: "Tabs",
+    types: ["tabs"],
+  },
+  tabContent: {
+    title: "Tabs with content",
+    types: ["tabContent"],
+  },
+  rightNow: {
+    title: "Tabs with content and links",
+    types: ["tabContent", "selectedPageLinks"],
+  },
+  history: {
+    title: "History",
+    types: ["history"],
+  },
+  bookmarks: {
+    title: "Bookmarks",
+    types: ["bookmarks"],
+  },
+  quick: {
+    title: "Tab/Recent History/Bookmarks",
+    types: ["tabs", "recentHistory", "bookmarks"],
+  },
+  everything: {
+    title: "Everything",
+    types: ["tabContent", "history", "bookmarks", "selectedPageLinks"],
   },
 };
 
@@ -95,13 +172,36 @@ export async function collectData() {
     results.data[key].items = items;
   }
   results.totalTime = Date.now() - totalStartTime;
+  results.collections = [];
+  for (const key in dataCollections) {
+    const { title, types } = dataCollections[key];
+    results.collections.push(new Collection(title, types, results));
+  }
   return results;
+}
+
+class Collection {
+  constructor(title, types, browserData) {
+    this.title = title;
+    this.items = [];
+    this.itemsById = new Map();
+    for (const type of types) {
+      const items = browserData.data[type].items;
+      for (const item of items) {
+        if (this.itemsById.get(item.id)) {
+          continue;
+        }
+        this.itemsById.set(item.id, item);
+        this.items.push(item);
+      }
+    }
+  }
 }
 
 class Item {
   get description() {
     const name = this.constructor.name;
-    return `${name}: ${this.title}/${this.id}`;
+    return `${name}: ${this.title}`;
   }
 
   get indexed() {
@@ -200,5 +300,33 @@ class Tab extends Item {
   get relevance() {
     // Should use combination of active, lastAccessed
     return 1;
+  }
+}
+
+class Link extends Item {
+  constructor(tab, link) {
+    super();
+    this._tab = tab;
+    this._link = link;
+  }
+
+  get properties() {
+    return ["url", "title", "titleAttribute"];
+  }
+
+  get id() {
+    return this._link.id;
+  }
+
+  get url() {
+    return this._link.url;
+  }
+
+  get title() {
+    return this._link.content;
+  }
+
+  get titleAttribute() {
+    return this._link.title;
   }
 }

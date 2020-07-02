@@ -20,3 +20,25 @@ input[type="text"] {
 .info-value {
   margin-left: 0.5em;
 }
+
+.allCollections {
+  display: flex;
+}
+
+.collection {
+  flex: auto;
+  border: 1px solid #666;
+  background-color: #f3f3f3;
+  border-radius: 2px;
+  margin: 7px;
+  padding: 5px;
+}
+
+.provider h4 {
+  border-bottom: 2px solid #666;
+}
+
+.info-value {
+  font-size: 90%;
+  opacity: 0.7;
+}

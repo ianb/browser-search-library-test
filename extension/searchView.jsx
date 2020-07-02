@@ -81,24 +81,88 @@ class BrowserData extends React.Component {
 
 class SearchResults extends React.Component {
   render() {
+    const emptyResults = [];
     const results = [];
-    for (const name in this.props.searchResults) {
+    for (const title in this.props.searchResults.collections) {
+      const collection = this.props.searchResults.collections[title];
+      let anyResults = false;
+      for (const providerName in collection) {
+        if (collection[providerName].matches.length) {
+          anyResults = true;
+        }
+      }
+      if (!anyResults) {
+        emptyResults.push(<EmptyCollection key={title} title={title} />);
+        continue;
+      }
       results.push(
-        <ProviderSearchResult
-          key={name}
-          name={name}
-          data={this.props.searchResults[name]}
+        <CollectionSearchResults
+          key={title}
+          title={title}
+          results={collection}
         />
       );
     }
-    return <div>{results}</div>;
+    if (!results.length) {
+      return <div id="no-search">No search results</div>;
+    }
+    if (emptyResults.length) {
+      return (
+        <div>
+          <div>{emptyResults}</div>
+          <div className="allCollections">{results}</div>
+        </div>
+      );
+    }
+    return <div className="allCollections">{results}</div>;
   }
 }
 
-class ProviderSearchResult extends React.Component {
+class EmptyCollection extends React.Component {
   render() {
+    return (
+      <div>
+        <strong>{this.props.title}</strong>: no results
+      </div>
+    );
+  }
+}
+
+class CollectionSearchResults extends React.Component {
+  render() {
+    const providerResults = [];
+    for (const key in this.props.results) {
+      const p = this.props.results[key];
+      providerResults.push(
+        <ProviderSearchResults
+          key={key}
+          provider={p.provider}
+          time={p.time}
+          matches={p.matches}
+        />
+      );
+    }
+    return (
+      <div className="collection">
+        <h3>{this.props.title}</h3>
+        <div>{providerResults}</div>
+      </div>
+    );
+  }
+}
+
+class ProviderSearchResults extends React.Component {
+  render() {
+    if (!this.props.matches.length) {
+      return (
+        <div className="provider">
+          <strong>{this.props.provider.name}</strong>: no results (
+          {this.props.time}ms)
+        </div>
+      );
+    }
     const items = [];
-    for (const item of this.props.data.items) {
+    for (const item of this.props.matches) {
       let val;
       let info = [];
       for (const key in item.info) {
@@ -117,7 +181,12 @@ class ProviderSearchResult extends React.Component {
       if (item.item.url) {
         val = (
           <span>
-            <a href={item.item.url} target="_blank" rel="noopener">
+            <a
+              href={item.item.url}
+              data-id={item.item.id}
+              target="_blank"
+              rel="noopener"
+            >
               {item.item.description}
             </a>
             {info}
@@ -133,15 +202,11 @@ class ProviderSearchResult extends React.Component {
       items.push(<li key={item.item.id}>{val}</li>);
     }
     return (
-      <div>
-        <h3>
-          <a href={this.props.data.provider.url} target="_blank" rel="noopener">
-            {this.props.data.provider.name}
-          </a>
-        </h3>
+      <div className="provider">
+        <h4>{this.props.provider.name}</h4>
         <div>
-          Time: {this.props.data.time}ms <br />
-          Number of results: {this.props.data.items.length}
+          Time: {this.props.time}ms <br />
+          Number of results: {this.props.matches.length}
         </div>
         <ul>{items}</ul>
       </div>
